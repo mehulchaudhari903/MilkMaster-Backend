@@ -1912,12 +1912,16 @@ app.post('/api/orders/:id/cancel', authenticate, async(req, res) => {
     }
 });
 
+app.get('/', (req, res) => {
+    res.send('Hello from Node.js server!');
+  });
+  
 // Start the server
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
     console.log('Available endpoints:');
-    console.log('- POST /api/admin/login - Admin login');
-    console.log('- POST /api/user/login - User login');
+    console.log('- POST /api/admin - Admin login');
+    console.log('- POST /api/login - User login');
     console.log('- POST /api/logout - Logout current session');
     console.log('- POST /api/logout-all - Logout all sessions');
     console.log('- GET /api/user - Get user profile');
