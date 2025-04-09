@@ -1,0 +1,69 @@
+name: Node.js CI/CD
+
+# Trigger the workflow on push or pull request events to the main branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Define environment variables
+env:
+  NODE_VERSION: '18.x'  # Specify the Node.js version your project uses
+  PORT: 5000           # Default port from your server.js
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'  # Cache npm dependencies for faster builds
+
+      # Install dependencies
+      - name: Install Dependencies
+        run: npm install
+
+      # Run linting (optional, if you have a linter configured)
+      - name: Run Linting
+        run: npm run lint
+        if: failure()  # Only run if previous steps succeed (optional)
+
+      # Run tests (assuming you have a test script in package.json)
+      - name: Run Tests
+        run: npm test
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}  # Use GitHub Secrets for sensitive data
+          API_KEY: ${{ secrets.API_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        if: failure()  # Only run if previous steps succeed
+
+      # Build the project (if you have a build script)
+      - name: Build Project
+        run: npm run build
+        if: failure()  # Only run if previous steps succeed (optional)
+
+      # Optional: Deploy to a server (e.g., Heroku, AWS, etc.)
+      # Uncomment and configure if needed
+      # - name: Deploy to Production
+      #   if: github.ref == 'refs/heads/main'  # Only deploy on main branch push
+      #   run: |
+      #     # Add deployment commands here (e.g., push to Heroku, upload to S3)
+      #     echo "Deploying to production..."
+
+    # Optional: Notify on failure (e.g., via Slack or email)
+    # - name: Notify on Failure
+    #   if: failure()
+    #   uses: slackapi/slack-github-action@v1.23.0
+    #   with:
+    #     slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+    #     slack-channel: '#ci-cd'
+    #     text: 'Build failed for ${{ github.repository }}'
